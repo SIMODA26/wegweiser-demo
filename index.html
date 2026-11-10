@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Wegweiser Testseite</title>
+  <link rel="stylesheet" href="src/tokens.css">
+  <style>
+    body { margin: 0; font-family: "RB Rational Neue", system-ui, sans-serif; background: #f4f7f7; color: #1d3536; }
+    main { max-width: 760px; margin: 0 auto; padding: 48px 20px 140px; }
+    h1 { font-size: 28px; margin: 0 0 8px; }
+    p { line-height: 1.5; }
+    .stand { font-size: 13px; opacity: 0.75; }
+    .fragen { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 28px; padding: 0; list-style: none; }
+    .fragen button { font: inherit; font-size: 14px; padding: 8px 12px; border: 1px solid #b9cccc; border-radius: 18px; background: #fff; color: inherit; cursor: pointer; text-align: left; }
+    .fragen button:hover, .fragen button:focus-visible { border-color: #0a7a7a; outline: none; }
+    h2 { font-size: 16px; margin: 24px 0 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Wegweiser Testseite</h1>
+    <p>Interne Testseite, keine Seite der Paracelsus Kliniken. Unten rechts öffnet sich der Wegweiser. Die Beispiele schicken eine Frage direkt hinein.</p>
+    <p class="stand" id="stand">Wissensstand wird geladen …</p>
+
+    <h2>Anliegen in eigenen Worten</h2>
+    <ul class="fragen">
+      <li><button>Ich habe seit Wochen Knieschmerzen und wohne in Bremen</button></li>
+      <li><button>Mein Vater hat Parkinson, wo können wir hin?</button></li>
+      <li><button>Ich brauche eine neue Hüfte, wohne in Leipzig</button></li>
+      <li><button>Bandscheibenvorfall</button></li>
+      <li><button>HNO München</button></li>
+    </ul>
+    <h2>Aufenthalt, Kontakt, Termin</h2>
+    <ul class="fragen">
+      <li><button>Wann sind Besuchszeiten in Kassel?</button></li>
+      <li><button>Wie teuer ist das Parken in Golzheim?</button></li>
+      <li><button>Termin online buchen Bremen</button></li>
+      <li><button>Wer ist der Chefarzt der Orthopädie in Bremen?</button></li>
+      <li><button>Telefonnummer Henstedt</button></li>
+    </ul>
+    <h2>Grenzen</h2>
+    <ul class="fragen">
+      <li><button>Ich habe Brustschmerzen und mir ist schwindelig</button></li>
+      <li><button>Kann ich Ibuprofen und Marcumar zusammen nehmen?</button></li>
+      <li><button>Wo kann ich mein Kind zur Welt bringen?</button></li>
+      <li><button>Wie ist das Wetter morgen?</button></li>
+    </ul>
+  </main>
+
+  <!-- KI-Schicht testen: „node server/ki-server.js“ starten und diese Seite mit ?ki=1 aufrufen -->
+  <script>
+    if (new URLSearchParams(location.search).get("ki") === "1") window.ParacelsusConfig = { kiEndpoint: "http://localhost:8787/frage" };
+  </script>
+  <script src="paracelsus-widget.js" defer></script>
+  <script>
+    document.querySelectorAll(".fragen button").forEach(function (b) {
+      b.addEventListener("click", function () { window.ParacelsusWidget.ask(b.textContent); });
+    });
+    window.addEventListener("load", function () {
+      window.ParacelsusWidget.open();
+      var warte = setInterval(function () {
+        if (!window.ParacelsusWidget.getHealthCheck) return;
+        clearInterval(warte);
+        var h = window.ParacelsusWidget.getHealthCheck();
+        document.getElementById("stand").textContent = "Wissensstand: " + (h.wissensstand || "unbekannt").slice(0, 10) + ", " + h.seiten + " Seiten und " + h.knowledgeEntriesCount + " Einträge von paracelsus-kliniken.de";
+      }, 200);
+    });
+  </script>
+</body>
+</html>
